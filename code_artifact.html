@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漫遊桃園・探索桃園區 - 文化歷史與地方特色網</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Population Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#FAF8F5',      // 米白溫潤底色
+                            card: '#FFFFFF',    // 卡片純白
+                            primary: '#C85A32', // 暖橘色 / 赤陶色
+                            secondary: '#2E5A44', // 深綠色 / 檜木綠
+                            accent: '#A67C52',  // 淺棕色 / 木質暖色
+                            dark: '#2B2825',    // 深灰褐文字
+                            muted: '#6B6560',   // 輔助灰色
+                            light: '#F3EDE6'    // 柔和淺褐點綴
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF8F5;
+            color: #2B2825;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+        }
+        .nav-link.active {
+            color: #C85A32;
+            font-weight: 700;
+            border-bottom: 2px solid #C85A32;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px -10px rgba(200, 90, 50, 0.15);
+        }
+        /* Timeline styling */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: #D1C7BD;
+            transform: translateX(-50%);
+        }
+        @media (max-width: 768px) {
+            .timeline-line::before {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- ==================== 三、共用頂部導覽列 ==================== -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-brand-light">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <!-- Brand Title -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-xl shadow-md">
+                        桃
+                    </div>
+                    <div>
+                        <span class="text-xl sm:text-2xl font-bold text-brand-dark tracking-wide">漫遊桃園・探索桃園區</span>
+                        <span class="block text-xs text-brand-accent tracking-widest font-serif">TAOYUAN DISTRICT CULTURAL GUIDE</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex space-x-8">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-link text-brand-dark hover:text-brand-primary py-2 text-base font-medium transition-colors">首頁</button>
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-link text-brand-dark hover:text-brand-primary py-2 text-base font-medium transition-colors">文化歷史</button>
+                    <button onclick="switchTab('attractions')" id="nav-attractions" class="nav-link text-brand-dark hover:text-brand-primary py-2 text-base font-medium transition-colors">知名景點</button>
+                    <button onclick="switchTab('food')" id="nav-food" class="nav-link text-brand-dark hover:text-brand-primary py-2 text-base font-medium transition-colors">食物特色</button>
+                    <button onclick="switchTab('population')" id="nav-population" class="nav-link text-brand-dark hover:text-brand-primary py-2 text-base font-medium transition-colors">人口結構</button>
+                </nav>
+
+                <!-- Mobile Hamburger Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="text-brand-dark hover:text-brand-primary focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-brand-light px-4 pt-2 pb-4 space-y-2 shadow-lg">
+            <button onclick="switchTab('home'); toggleMobileMenu();" id="mobile-nav-home" class="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-brand-dark hover:bg-brand-light hover:text-brand-primary">首頁</button>
+            <button onclick="switchTab('history'); toggleMobileMenu();" id="mobile-nav-history" class="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-brand-dark hover:bg-brand-light hover:text-brand-primary">文化歷史</button>
+            <button onclick="switchTab('attractions'); toggleMobileMenu();" id="mobile-nav-attractions" class="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-brand-dark hover:bg-brand-light hover:text-brand-primary">知名景點</button>
+            <button onclick="switchTab('food'); toggleMobileMenu();" id="mobile-nav-food" class="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-brand-dark hover:bg-brand-light hover:text-brand-primary">食物特色</button>
+            <button onclick="switchTab('population'); toggleMobileMenu();" id="mobile-nav-population" class="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium text-brand-dark hover:bg-brand-light hover:text-brand-primary">人口結構</button>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- ==================== 四、首頁（Home View） ==================== -->
+        <div id="page-home" class="page-content">
+            <!-- Hero Banner -->
+            <div class="relative bg-brand-secondary text-white py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+                <div class="absolute inset-0 z-0 opacity-30 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1600&auto=format&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-brand-secondary via-brand-secondary/80 to-transparent z-0"></div>
+                <div class="relative z-10 max-w-4xl mx-auto text-left">
+                    <span class="inline-block px-3 py-1 bg-brand-primary text-white text-xs font-semibold rounded-full uppercase tracking-widest mb-4">桃園首善之區</span>
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">走進桃園，探索城市的文化與魅力</h1>
+                    <p class="text-lg sm:text-xl text-brand-light/90 font-light mb-8 max-w-2xl">從歷史人文、特色景點、在地美食到人口發展，全方位認識桃園區古今交融的多元風貌與都會活力。</p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('history')" class="bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold px-8 py-3.5 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5">
+                            開始探索 <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </button>
+                        <button onclick="switchTab('attractions')" class="bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-sm font-semibold px-8 py-3.5 rounded-xl transition-all">
+                            瀏覽知名景點
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 桃園區簡介 Section -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="bg-white rounded-2xl p-8 sm:p-12 shadow-sm border border-brand-light/60 flex flex-col md:flex-row items-center gap-8">
+                    <div class="md:w-1/2 space-y-4">
+                        <span class="text-brand-primary font-bold tracking-wider text-sm">GEOGRAPHY & DEVELOPMENT</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-brand-dark">樞紐重鎮・繁華與古意並存的桃園區</h2>
+                        <p class="text-brand-muted leading-relaxed">
+                            桃園區位於桃園市東北部，為桃園市政府所在地與政治、經濟、文教中心。舊名「桃仔園」，因早期茅草叢生中夾雜野桃開花而得名。地理位置緊鄰新北市，雙北生活圈緊密相連，境內擁有桃園火車站重劃區與藝文特區，兼具古風廟宇文化與現代化住宅商圈的無窮活力。
+                        </p>
+                        <div class="flex items-center gap-6 pt-2">
+                            <div>
+                                <span class="block text-2xl font-bold text-brand-secondary">75+</span>
+                                <span class="text-xs text-brand-muted">行政里數量</span>
+                            </div>
+                            <div class="h-8 w-px bg-brand-light"></div>
+                            <div>
+                                <span class="block text-2xl font-bold text-brand-secondary">34.8 km²</span>
+                                <span class="text-xs text-brand-muted">總行政面積</span>
+                            </div>
+                            <div class="h-8 w-px bg-brand-light"></div>
+                            <div>
+                                <span class="block text-2xl font-bold text-brand-secondary">47萬+</span>
+                                <span class="text-xs text-brand-muted">設籍居住人口</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 w-full">
+                        <img src="https://images.unsplash.com/photo-1508804185872-d7badad00f7d?q=80&w=800&auto=format&fit=crop" alt="桃園區風景" class="rounded-xl shadow-md object-cover w-full h-72">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 四大主題資訊卡片 Section -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-brand-dark mb-3">四大主題探索</h2>
+                    <p class="text-brand-muted">選擇您感興趣的主題，深入體驗桃園區的獨特風采</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Theme 1 -->
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-light card-hover flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://images.unsplash.com/photo-1590059206170-661739775132?q=80&w=600&auto=format&fit=crop" alt="文化歷史" class="w-full h-full object-cover">
+                                <span class="absolute top-4 left-4 bg-brand-primary text-white text-xs px-3 py-1 rounded-full font-medium">文化</span>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-brand-dark mb-3">文化歷史</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    追溯自清代桃仔園堡的開墾歲月，探索景福宮等開基大廟與日治神社古蹟，見證這座城市的歷史躍動與文化積澱。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <button onclick="switchTab('history')" class="w-full text-brand-primary font-semibold py-2 rounded-lg border border-brand-primary/20 hover:bg-brand-primary hover:text-white transition-colors text-sm">
+                                了解更多 <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Theme 2 -->
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-light card-hover flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?q=80&w=600&auto=format&fit=crop" alt="知名景點" class="w-full h-full object-cover">
+                                <span class="absolute top-4 left-4 bg-brand-secondary text-white text-xs px-3 py-1 rounded-full font-medium">景點</span>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-brand-dark mb-3">知名景點</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    探訪桃園市立圖書館總館、虎頭山環保公園夜景、忠烈祠神社文化園區與藝文特區，縱覽古今風貌。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <button onclick="switchTab('attractions')" class="w-full text-brand-secondary font-semibold py-2 rounded-lg border border-brand-secondary/20 hover:bg-brand-secondary hover:text-white transition-colors text-sm">
+                                了解更多 <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Theme 3 -->
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-light card-hover flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=600&auto=format&fit=crop" alt="食物特色" class="w-full h-full object-cover">
+                                <span class="absolute top-4 left-4 bg-brand-accent text-white text-xs px-3 py-1 rounded-full font-medium">美食</span>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-brand-dark mb-3">食物特色</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    品嚐大廟口大腸紅麵線、傳統潤餅、桃園觀光夜市小吃，以及融合多元族群文化的美味傳統眷村佳餚。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <button onclick="switchTab('food')" class="w-full text-brand-accent font-semibold py-2 rounded-lg border border-brand-accent/20 hover:bg-brand-accent hover:text-white transition-colors text-sm">
+                                了解更多 <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Theme 4 -->
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-brand-light card-hover flex flex-col justify-between">
+                        <div>
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop" alt="人口結構" class="w-full h-full object-cover">
+                                <span class="absolute top-4 left-4 bg-brand-dark text-white text-xs px-3 py-1 rounded-full font-medium">統計</span>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-brand-dark mb-3">人口結構</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    解析桃園區人口高密度成長、豐沛青壯年人口佔比與性別結構，瞭解桃園作為全台最年輕直轄市的發展契機。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-6 pt-0">
+                            <button onclick="switchTab('population')" class="w-full text-brand-dark font-semibold py-2 rounded-lg border border-brand-dark/20 hover:bg-brand-dark hover:text-white transition-colors text-sm">
+                                了解更多 <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 桃園區關鍵數據統計區 Section -->
+            <section class="bg-brand-light/50 py-16 border-y border-brand-light">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-10">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-brand-dark">桃園區關鍵數據指標</h2>
+                        <p class="text-brand-muted text-sm mt-1">呈現桃園區當前城市營運與發展規模概況</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-brand-light">
+                            <div class="w-12 h-12 mx-auto bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary text-xl mb-3">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <p class="text-xs text-brand-muted mb-1">行政區位置</p>
+                            <p class="text-lg font-bold text-brand-dark">桃園市東北部</p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-brand-light">
+                            <div class="w-12 h-12 mx-auto bg-brand-secondary/10 rounded-full flex items-center justify-center text-brand-secondary text-xl mb-3">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <p class="text-xs text-brand-muted mb-1">最新總人口數</p>
+                            <p class="text-2xl font-bold text-brand-secondary">474,218 <span class="text-xs font-normal">人</span></p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-brand-light">
+                            <div class="w-12 h-12 mx-auto bg-brand-accent/10 rounded-full flex items-center justify-center text-brand-accent text-xl mb-3">
+                                <i class="fa-solid fa-building-flag"></i>
+                            </div>
+                            <p class="text-xs text-brand-muted mb-1">行政里數</p>
+                            <p class="text-2xl font-bold text-brand-dark">82 <span class="text-xs font-normal">里</span></p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-center border border-brand-light">
+                            <div class="w-12 h-12 mx-auto bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary text-xl mb-3">
+                                <i class="fa-solid fa-chart-area"></i>
+                            </div>
+                            <p class="text-xs text-brand-muted mb-1">人口密度</p>
+                            <p class="text-2xl font-bold text-brand-primary">13,626 <span class="text-xs font-normal">人/km²</span></p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-6 text-xs text-brand-muted">
+                        <i class="fa-solid fa-circle-info mr-1"></i> 資料來源：桃園市政府民政局及桃園區戶政事務所（數據統計至 2024 年 9 月止）
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== 五、文化歷史頁面（History View） ==================== -->
+        <div id="page-history" class="page-content hidden">
+            <!-- Header Banner -->
+            <div class="bg-brand-secondary text-white py-16 px-4">
+                <div class="max-w-7xl mx-auto text-center">
+                    <span class="text-brand-primary font-bold tracking-widest text-xs uppercase bg-white/10 px-3 py-1 rounded-full">Historical Evolution</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold mt-3 mb-2">文化歷史－認識桃園的發展軌跡</h1>
+                    <p class="text-brand-light/80 text-sm max-w-2xl mx-auto">從桃仔園古名到當代國門之都，穿梭數百年歷史歲月，領略古蹟建物與人文采風。</p>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+                <!-- 1. 歷史沿革 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-dark mb-4 border-l-4 border-brand-primary pl-3">桃園區歷史沿革</h2>
+                        <p class="text-brand-muted leading-relaxed mb-4">
+                            桃園區早期為平埔族凱達格蘭族宵里社與南崁社的狩獵獵場。清領時期，平埔族人與漢人陸續在此開墾，因地多茅草且荒蕪，拓墾者於此植桃，每當春季桃花盛開景致極美，故舊稱為**「桃仔園」**。
+                        </p>
+                        <p class="text-brand-muted leading-relaxed mb-4">
+                            日治時期，台灣總督府設立「桃仔園廳」，後改為「桃園街」，奠定了此地作為桃園區域行政與商業核心的地位。二戰後演變為「桃園鎮」，因人口大幅增加，於 1971 年升格為縣轄市「桃園市」，並於 2014 年桃園縣升格直轄市後，正式改制為**「桃園區」**。
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1590059206170-661739775132?q=80&w=800&auto=format&fit=crop" alt="桃園歷史古蹟" class="rounded-2xl shadow-md w-full h-80 object-cover">
+                    </div>
+                </div>
+
+                <!-- 2. 歷史發展時間軸 Timeline -->
+                <div>
+                    <div class="text-center mb-12">
+                        <h2 class="text-2xl font-bold text-brand-dark">桃園區重要歷史事件時間軸</h2>
+                        <p class="text-brand-muted text-sm mt-1">縱覽桃園區從昔日聚落到今日現代化大都市的關鍵節點</p>
+                    </div>
+
+                    <div class="relative timeline-line max-w-4xl mx-auto space-y-8">
+                        <!-- Timeline Item 1 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="flex items-center justify-end w-full md:w-1/2 md:pr-8 mb-4 md:mb-0">
+                                <div class="bg-white p-6 rounded-xl border border-brand-light shadow-sm w-full">
+                                    <span class="text-brand-primary font-bold text-sm">清乾隆 10 年 (1745年)</span>
+                                    <h3 class="text-lg font-bold text-brand-dark mt-1">「桃仔園」地名初始形成</h3>
+                                    <p class="text-brand-muted text-sm mt-2">漢人墾戶大規模入墾，沿途築茅屋防禦並栽植桃樹，漸成聚落村莊。</p>
+                                </div>
+                            </div>
+                            <div class="absolute left-5 md:left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-brand-primary border-4 border-white shadow flex items-center justify-center text-white text-xs font-bold">1</div>
+                            <div class="w-full md:w-1/2 md:pl-8"></div>
+                        </div>
+
+                        <!-- Timeline Item 2 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="w-full md:w-1/2 md:pr-8"></div>
+                            <div class="absolute left-5 md:left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-brand-secondary border-4 border-white shadow flex items-center justify-center text-white text-xs font-bold">2</div>
+                            <div class="flex items-center justify-start w-full md:w-1/2 md:pl-8 mb-4 md:mb-0">
+                                <div class="bg-white p-6 rounded-xl border border-brand-light shadow-sm w-full">
+                                    <span class="text-brand-secondary font-bold text-sm">清嘉慶 16 年 (1811年)</span>
+                                    <h3 class="text-lg font-bold text-brand-dark mt-1">景福宮（大廟）興建竣工</h3>
+                                    <p class="text-brand-muted text-sm mt-2">主祀開漳聖王，為桃園舊城區商業與信仰的核心，確立大廟商圈雛形。</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timeline Item 3 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="flex items-center justify-end w-full md:w-1/2 md:pr-8 mb-4 md:mb-0">
+                                <div class="bg-white p-6 rounded-xl border border-brand-light shadow-sm w-full">
+                                    <span class="text-brand-accent font-bold text-sm">日治大正 9 年 (1920年)</span>
+                                    <h3 class="text-lg font-bold text-brand-dark mt-1">地方官制改制為「桃園街」</h3>
+                                    <p class="text-brand-muted text-sm mt-2">設桃園郡桃園街，興築縱貫線鐵路桃園驛，確立交通樞紐地位。</p>
+                                </div>
+                            </div>
+                            <div class="absolute left-5 md:left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-brand-accent border-4 border-white shadow flex items-center justify-center text-white text-xs font-bold">3</div>
+                            <div class="w-full md:w-1/2 md:pl-8"></div>
+                        </div>
+
+                        <!-- Timeline Item 4 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="w-full md:w-1/2 md:pr-8"></div>
+                            <div class="absolute left-5 md:left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-brand-dark border-4 border-white shadow flex items-center justify-center text-white text-xs font-bold">4</div>
+                            <div class="flex items-center justify-start w-full md:w-1/2 md:pl-8">
+                                <div class="bg-white p-6 rounded-xl border border-brand-light shadow-sm w-full">
+                                    <span class="text-brand-dark font-bold text-sm">西元 2014 年 (民國103年)</span>
+                                    <h3 class="text-lg font-bold text-brand-dark mt-1">桃園縣升格，改制為「桃園區」</h3>
+                                    <p class="text-brand-muted text-sm mt-2">桃園縣正式升格為第六個直轄市，原縣轄市桃園市改制為桃園區，為市府行政中心。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 文化資產與傳統信仰介紹 -->
+                <div>
+                    <h2 class="text-2xl font-bold text-brand-dark mb-6 border-l-4 border-brand-secondary pl-3">重要文化資產與歷史建築</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=600&auto=format&fit=crop" alt="桃園景福宮" class="w-full h-48 object-cover">
+                            <div class="p-5">
+                                <span class="text-xs text-brand-primary font-bold">市定古蹟</span>
+                                <h3 class="text-lg font-bold text-brand-dark mt-1 mb-2">桃園景福宮（大廟）</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    創建於清乾隆年間，為桃園區規模最宏偉之傳統廟宇。建築保有精緻雕刻與傳統大木結構，每年農曆二月十五日開漳聖王聖誕活動極具特色。
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=600&auto=format&fit=crop" alt="桃園神社" class="w-full h-48 object-cover">
+                            <div class="p-5">
+                                <span class="text-xs text-brand-secondary font-bold">市定古蹟</span>
+                                <h3 class="text-lg font-bold text-brand-dark mt-1 mb-2">桃園忠烈祠暨神社文化園區</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    落成於 1938 年，是全台灣乃至於日本境外保存最完整之日式神社建築，結合檜木結構與傳統神社工藝，具極高文化價值。
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm">
+                            <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop" alt="桃園77藝文町" class="w-full h-48 object-cover">
+                            <div class="p-5">
+                                <span class="text-xs text-brand-accent font-bold">歷史建築</span>
+                                <h3 class="text-lg font-bold text-brand-dark mt-1 mb-2">桃園77藝文町（舊警察宿舍）</h3>
+                                <p class="text-brand-muted text-sm leading-relaxed">
+                                    重現日治時期警察宿舍群聚落，經活化後轉型為結合展演、文創市集、輕食與歷史教育之市中心綠洲景點。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Home -->
+                <div class="text-center pt-6">
+                    <button onclick="switchTab('home')" class="inline-flex items-center text-brand-primary hover:underline font-medium">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> 返回首頁
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 六、知名景點頁面（Attractions View） ==================== -->
+        <div id="page-attractions" class="page-content hidden">
+            <!-- Header Banner -->
+            <div class="bg-brand-primary text-white py-16 px-4">
+                <div class="max-w-7xl mx-auto text-center">
+                    <span class="text-white/80 font-bold tracking-widest text-xs uppercase bg-black/10 px-3 py-1 rounded-full">Famous Attractions</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold mt-3 mb-2">知名景點－探索桃園的城市風景</h1>
+                    <p class="text-white/90 text-sm max-w-2xl mx-auto">從萬卷書香的建築地標，到俯瞰百萬夜景的綠地公園，探索桃園區的無窮魅力。</p>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <!-- Filter Buttons -->
+                <div class="flex flex-wrap justify-center gap-3 mb-10">
+                    <button onclick="filterAttractions('all')" class="att-filter-btn active bg-brand-primary text-white px-5 py-2 rounded-full text-sm font-medium shadow-sm transition">全部景點</button>
+                    <button onclick="filterAttractions('landmark')" class="att-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">城市地標</button>
+                    <button onclick="filterAttractions('nature')" class="att-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">自然休閒</button>
+                    <button onclick="filterAttractions('culture')" class="att-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">歷史文化</button>
+                    <button onclick="filterAttractions('family')" class="att-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">親子旅遊</button>
+                </div>
+
+                <!-- Attractions Grid -->
+                <div id="attractions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Cards will be dynamically inserted or displayed -->
+                    <!-- Card 1 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="landmark family">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=800&auto=format&fit=crop" alt="桃園市立圖書館總館" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-primary text-white text-xs px-2.5 py-1 rounded-md font-medium">城市地標</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園市立圖書館總館</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區南平路301號（藝文特區）</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">以「生命樹」為設計概念，結合綠建築工藝與採光天井，號稱全台最美圖書館，內有影城、書店與人文咖啡館。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：建築美學指標、適合親子閱讀休閒</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="nature family">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop" alt="虎頭山環保公園" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-secondary text-white text-xs px-2.5 py-1 rounded-md font-medium">自然休閒</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">虎頭山環保公園 / 後花園</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區成功路三段</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">有「桃園後花園」美譽，設有完善登山步道、樹屋兒童遊戲區與觀景台，是俯瞰桃園璀璨城市夜景的最佳據點。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：百萬夜景視野、豐富芬多精綠意健行</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="culture">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=800&auto=format&fit=crop" alt="忠烈祠神社文化園區" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-accent text-white text-xs px-2.5 py-1 rounded-md font-medium">歷史文化</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園忠烈祠暨神社文化園區</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區成功路三段200號</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">全台保存最完整的日式神社，園區內杉木林立、鳥居與拜殿莊嚴古樸，並經常舉辦文創市集與燈籠祭典。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：沉浸式日式風情、市定古蹟文化巡禮</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="culture landmark">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=800&auto=format&fit=crop" alt="桃園景福宮" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-accent text-white text-xs px-2.5 py-1 rounded-md font-medium">歷史文化</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園景福宮 (大廟)</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區中正路208號</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">桃園舊市區發展中心點，歷史逾二百年。廟內香火鼎盛，建築石雕與木雕藝術價值極高，周邊美食小吃雲集。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：百年信仰中心、體驗在地濃厚人情味</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="landmark family">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=800&auto=format&fit=crop" alt="桃園藝文特區廣場" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-primary text-white text-xs px-2.5 py-1 rounded-md font-medium">城市地標</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園藝文特區廣場</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區中正路1188號</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">綠意盎然的大型都會公園，定期舉辦大型藝文演出、音樂節與文創市集，為桃園現代化生活品質的代表標竿。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：廣達數公頃綠地、戶外展演活動熱點</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="attraction-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="nature family">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=800&auto=format&fit=crop" alt="三民運動公園" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-secondary text-white text-xs px-2.5 py-1 rounded-md font-medium">自然休閒</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">三民運動公園與南崁溪自行車道</h3>
+                                <p class="text-xs text-brand-accent mb-3"><i class="fa-solid fa-location-dot mr-1"></i> 桃園區三民路一段</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">貫穿桃園區的親水廊道，設有完善步道、溜冰場與籃球場，夜晚彩虹橋燈光絢麗，是市民日常散步運動的首選。</p>
+                            </div>
+                            <div class="pt-3 border-t border-brand-light/60">
+                                <span class="text-xs text-brand-secondary font-semibold"><i class="fa-solid fa-thumbs-up mr-1"></i> 推薦理由：水岸綠廊休閒、自行車騎乘親水體驗</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Location Map Visual Container -->
+                <div class="mt-16 bg-white rounded-2xl p-6 border border-brand-light shadow-sm">
+                    <h3 class="text-xl font-bold text-brand-dark mb-2"><i class="fa-solid fa-map text-brand-primary mr-2"></i>桃園區景點地理分布簡圖</h3>
+                    <p class="text-brand-muted text-sm mb-6">便利瀏覽桃園區核心景點對應地理位置關係</p>
+
+                    <div class="relative bg-brand-light/40 rounded-xl p-8 border border-dashed border-brand-accent/30 text-center min-h-[250px] flex flex-col justify-center items-center">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                            <div class="p-4 bg-white rounded-xl shadow-sm border border-brand-light">
+                                <span class="font-bold text-brand-secondary block">西北區</span>
+                                <span class="text-xs text-brand-muted">藝文特區 / 圖書館總館</span>
+                            </div>
+                            <div class="p-4 bg-white rounded-xl shadow-sm border border-brand-light">
+                                <span class="font-bold text-brand-primary block">東北區</span>
+                                <span class="text-xs text-brand-muted">虎頭山公園 / 忠烈祠神社</span>
+                            </div>
+                            <div class="p-4 bg-white rounded-xl shadow-sm border border-brand-light">
+                                <span class="font-bold text-brand-accent block">核心舊城區</span>
+                                <span class="text-xs text-brand-muted">景福宮 / 桃園車站商圈 / 77藝文町</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-brand-muted mt-6"><i class="fa-solid fa-circle-info mr-1"></i> 點選各大景點可經由交通網絡（台鐵桃園站、桃園捷運綠線構建中）快速抵達</p>
+                    </div>
+                </div>
+
+                <div class="text-center pt-8">
+                    <button onclick="switchTab('home')" class="inline-flex items-center text-brand-primary hover:underline font-medium">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> 返回首頁
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 七、食物特色頁面（Food View） ==================== -->
+        <div id="page-food" class="page-content hidden">
+            <!-- Header Banner -->
+            <div class="bg-brand-accent text-white py-16 px-4">
+                <div class="max-w-7xl mx-auto text-center">
+                    <span class="text-white/80 font-bold tracking-widest text-xs uppercase bg-black/10 px-3 py-1 rounded-full">Local Gastronomy</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold mt-3 mb-2">食物特色－品味桃園的在地美食</h1>
+                    <p class="text-white/90 text-sm max-w-2xl mx-auto">穿梭古早味大廟商圈與熱鬧夜市，品嚐數十年傳承的古早珍饈與多元飲食文化。</p>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <!-- Food Category Filter -->
+                <div class="flex flex-wrap justify-center gap-3 mb-10">
+                    <button onclick="filterFood('all')" class="food-filter-btn active bg-brand-accent text-white px-5 py-2 rounded-full text-sm font-medium shadow-sm transition">全部美食</button>
+                    <button onclick="filterFood('snack')" class="food-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">傳統小吃</button>
+                    <button onclick="filterFood('market')" class="food-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">夜市市場美食</button>
+                    <button onclick="filterFood('dessert')" class="food-filter-btn bg-white text-brand-dark hover:bg-brand-light px-5 py-2 rounded-full text-sm font-medium shadow-sm border border-brand-light transition">甜點冰品</button>
+                </div>
+
+                <!-- Food Grid -->
+                <div id="food-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Food Item 1 -->
+                    <div class="food-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="snack market">
+                        <div class="h-52 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=800&auto=format&fit=crop" alt="大廟口紅麵線" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-primary text-white text-xs px-2.5 py-1 rounded-md font-medium">傳統小吃</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">大廟口大腸紅麵線</h3>
+                                <p class="text-xs text-brand-primary font-semibold mb-2">主要食材：手工紅麵線、滷大腸、特製花枝丸、蒜泥</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">位於景福宮旁數十年老店，湯頭濃郁香醇，滷大腸Q彈入味，是陪伴無數桃園人長大的經典古早味。</p>
+                            </div>
+                            <div class="bg-brand-light/50 p-3 rounded-xl border border-brand-light text-xs text-brand-muted">
+                                <strong class="text-brand-dark">文化背景：</strong> 隨景福宮大廟集散商圈而生，體現早期台灣廟口飲食文化的活化石。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food Item 2 -->
+                    <div class="food-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="snack">
+                        <div class="h-52 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?q=80&w=800&auto=format&fit=crop" alt="桃園傳統潤餅" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-accent text-white text-xs px-2.5 py-1 rounded-md font-medium">傳統小吃</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園老牌潤餅</h3>
+                                <p class="text-xs text-brand-primary font-semibold mb-2">主要食材：現擦潤餅皮、紅燒肉、蛋酥、花生粉、高麗菜</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">分量極為巨無霸實惠，現做Q彈餅皮包裹滿滿香氣十足的菜餚與酥脆蛋酥，一口咬下層次豐富極具飽足感。</p>
+                            </div>
+                            <div class="bg-brand-light/50 p-3 rounded-xl border border-brand-light text-xs text-brand-muted">
+                                <strong class="text-brand-dark">文化背景：</strong> 傳承清明節氣與閩南飲食習慣，成為火車站前通勤族必買的平民美味。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food Item 3 -->
+                    <div class="food-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="market">
+                        <div class="h-52 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?q=80&w=800&auto=format&fit=crop" alt="桃園觀光夜市排骨酥" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-secondary text-white text-xs px-2.5 py-1 rounded-md font-medium">夜市美食</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">桃園觀光夜市美食（排骨酥/土魠魚羹）</h3>
+                                <p class="text-xs text-brand-primary font-semibold mb-2">主要食材：醃製排骨、冬瓜、特製中藥高湯</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">位在北埔路與正康一街的桃園觀光夜市，集結數百攤美食，現炸排骨酥湯頭甘甜，排骨入口即化。</p>
+                            </div>
+                            <div class="bg-brand-light/50 p-3 rounded-xl border border-brand-light text-xs text-brand-muted">
+                                <strong class="text-brand-dark">文化背景：</strong> 桃園夜市呈現多元族群人口移民匯聚之飲食縮影，夜間休閒文化核心。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food Item 4 -->
+                    <div class="food-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="dessert">
+                        <div class="h-52 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=80&w=800&auto=format&fit=crop" alt="傳統芋圓黑糖冰" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-primary text-white text-xs px-2.5 py-1 rounded-md font-medium">甜點冰品</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">古早味黑糖豆花與芋圓冰</h3>
+                                <p class="text-xs text-brand-primary font-semibold mb-2">主要食材：手工非基改豆花、古法熬煮黑糖、地瓜圓</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">堅持純手工製作，豆花綿密富含濃郁豆香，搭配特製濃郁黑糖水與彈牙芋圓，消暑清甜不膩。</p>
+                            </div>
+                            <div class="bg-brand-light/50 p-3 rounded-xl border border-brand-light text-xs text-brand-muted">
+                                <strong class="text-brand-dark">文化背景：</strong> 承襲傳統台灣古法甜點製程，廣受各年齡層民眾喜愛。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Food Item 5 -->
+                    <div class="food-card bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm card-hover flex flex-col" data-category="snack">
+                        <div class="h-52 relative overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?q=80&w=800&auto=format&fit=crop" alt="眷村風味麵食" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-brand-secondary text-white text-xs px-2.5 py-1 rounded-md font-medium">傳統小吃</span>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold text-brand-dark mb-2">經典眷村手工牛肉麵</h3>
+                                <p class="text-xs text-brand-primary font-semibold mb-2">主要食材：牛大骨高湯、厚切牛腱肉、家常手打麵</p>
+                                <p class="text-brand-muted text-sm leading-relaxed mb-4">桃園區過去有許多眷村聚落，濃郁的川味與紅燒牛肉麵成為當地獨樹一格的麵食文化指標。</p>
+                            </div>
+                            <div class="bg-brand-light/50 p-3 rounded-xl border border-brand-light text-xs text-brand-muted">
+                                <strong class="text-brand-dark">文化背景：</strong> 戰後移民文化融合，將大江南北的麵食點心手藝深植於桃園街巷。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center pt-10">
+                    <button onclick="switchTab('home')" class="inline-flex items-center text-brand-primary hover:underline font-medium">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> 返回首頁
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 八、人口結構頁面（Population View） ==================== -->
+        <div id="page-population" class="page-content hidden">
+            <!-- Header Banner -->
+            <div class="bg-brand-dark text-white py-16 px-4">
+                <div class="max-w-7xl mx-auto text-center">
+                    <span class="text-brand-primary font-bold tracking-widest text-xs uppercase bg-white/10 px-3 py-1 rounded-full">Demographic Statistics</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold mt-3 mb-2">人口結構－認識桃園區的人口發展</h1>
+                    <p class="text-gray-300 text-sm max-w-2xl mx-auto">以客觀統計數據深入瞭解桃園區性別比例、年齡層分布及城鄉發展動能。</p>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+                <!-- Summary Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <span class="text-xs text-brand-muted block mb-1">設籍總人口數</span>
+                        <div class="text-3xl font-bold text-brand-dark mb-1">474,218 <span class="text-xs font-normal">人</span></div>
+                        <span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-trend-up mr-1"></i> 全桃園市人口最多行政區</span>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <span class="text-xs text-brand-muted block mb-1">青壯年人口 (15-64歲)</span>
+                        <div class="text-3xl font-bold text-brand-primary mb-1">71.2 <span class="text-xs font-normal">%</span></div>
+                        <span class="text-xs text-brand-muted">龐大生產力與消費主軸</span>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <span class="text-xs text-brand-muted block mb-1">性別比 (每百女子比男子)</span>
+                        <div class="text-3xl font-bold text-brand-secondary mb-1">95.4 <span class="text-xs font-normal">%</span></div>
+                        <span class="text-xs text-brand-muted">女性人口略多於男性人口</span>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <span class="text-xs text-brand-muted block mb-1">戶數與平均每戶人口</span>
+                        <div class="text-3xl font-bold text-brand-accent mb-1">2.42 <span class="text-xs font-normal">人/戶</span></div>
+                        <span class="text-xs text-brand-muted">小家庭與青年首購族為主</span>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Chart 1: Gender Distribution -->
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <h3 class="text-lg font-bold text-brand-dark mb-2">1. 性別人口比例分布</h3>
+                        <p class="text-xs text-brand-muted mb-6">桃園區男女性別人口結構比例（圓餅圖）</p>
+                        <div class="h-64 relative flex justify-center">
+                            <canvas id="genderChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Age Structure Distribution -->
+                    <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                        <h3 class="text-lg font-bold text-brand-dark mb-2">2. 各年齡層人口結構分布</h3>
+                        <p class="text-xs text-brand-muted mb-6">幼年、青壯年與高齡人口比例（長條圖）</p>
+                        <div class="h-64 relative">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Historical Population Growth Trend -->
+                <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm">
+                    <h3 class="text-lg font-bold text-brand-dark mb-2">3. 近年桃園區人口成長趨勢 (2018 - 2024)</h3>
+                    <p class="text-xs text-brand-muted mb-6">持續吸引雙北與外縣市人口移入呈現穩定上升曲線（折線圖）</p>
+                    <div class="h-72 relative">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Demographic Analysis Report -->
+                <div class="bg-white p-8 rounded-2xl border border-brand-light shadow-sm space-y-4">
+                    <h3 class="text-xl font-bold text-brand-dark border-l-4 border-brand-primary pl-3">桃園區人口結構特色綜合分析</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-brand-muted leading-relaxed">
+                        <div>
+                            <h4 class="font-bold text-brand-dark text-base mb-2">年輕化與青壯年就業吸引力</h4>
+                            <p>
+                                桃園區為全台灣直轄市中相對年輕的區域。因擁有高鐵、國道交通便捷優勢，加上中路重劃區與經國重劃區等新興住宅區陸續開發，吸引大量雙北通勤族與年輕首購族移居，青壯年人口高達71%以上，注入極高城市活力。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-brand-dark text-base mb-2">人口密度與公共資源健全</h4>
+                            <p>
+                                人口密度每平方公里突破 1.3 萬人，顯示土地利用高度集約與商業蓬勃發展。區內設有多所優質高中、國中小及市立圖書館總館等文教設施，醫療與購物機能優異，為非常宜居之指標行政區。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Source Citation -->
+                    <div class="pt-4 border-t border-brand-light/80 text-xs text-brand-muted flex flex-col sm:flex-row justify-between gap-2">
+                        <span><i class="fa-solid fa-database mr-1"></i> 官方數據來源：桃園市政府民政局統計月報、桃園區戶政事務所</span>
+                        <span>資料統計年月：2024年9月發布數據</span>
+                    </div>
+                </div>
+
+                <div class="text-center pt-4">
+                    <button onclick="switchTab('home')" class="inline-flex items-center text-brand-primary hover:underline font-medium">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> 返回首頁
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==================== 十、共用頁尾（Footer） ==================== -->
+    <footer class="bg-brand-dark text-white border-t border-brand-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Brand Info -->
+                <div class="md:col-span-2 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-lg">
+                            桃
+                        </div>
+                        <span class="text-xl font-bold tracking-wide">漫遊桃園・探索桃園區</span>
+                    </div>
+                    <p class="text-gray-400 text-sm leading-relaxed max-w-md">
+                        本網站專為推廣桃園市桃園區之文化歷史、觀光景點、傳統美食與人口發展而設計，帶領大眾從多元角度深度的認識這座融合古今韻味的智慧城市。
+                    </p>
+                </div>
+
+                <!-- Navigation Links -->
+                <div>
+                    <h4 class="text-sm font-bold text-brand-light uppercase tracking-wider mb-4">網站頁面導覽</h4>
+                    <ul class="space-y-2.5 text-sm text-gray-400">
+                        <li><button onclick="switchTab('home')" class="hover:text-white transition">首頁 Overview</button></li>
+                        <li><button onclick="switchTab('history')" class="hover:text-white transition">文化歷史 History</button></li>
+                        <li><button onclick="switchTab('attractions')" class="hover:text-white transition">知名景點 Attractions</button></li>
+                        <li><button onclick="switchTab('food')" class="hover:text-white transition">食物特色 Gastronomy</button></li>
+                        <li><button onclick="switchTab('population')" class="hover:text-white transition">人口結構 Demographics</button></li>
+                    </ul>
+                </div>
+
+                <!-- Data Source & Info -->
+                <div>
+                    <h4 class="text-sm font-bold text-brand-light uppercase tracking-wider mb-4">資料來源與說明</h4>
+                    <ul class="space-y-2 text-xs text-gray-400 leading-relaxed">
+                        <li>• 桃園市政府民政局人口統計</li>
+                        <li>• 桃園市政府觀光旅遊局</li>
+                        <li>• 桃園區公所官方網站</li>
+                        <li>• 國家文化記憶庫</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-6 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>© 2026 漫遊桃園・探索桃園區文化專題網. All rights reserved.</p>
+                <p>本網站內容使用真實政府公開統計資料編製而成</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== JavaScript 功能邏輯 ==================== -->
+    <script>
+        // Page Switching Logic
+        function switchTab(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(page => page.classList.add('hidden'));
+
+            // Show selected page
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            // Scroll to top smooth
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Update Nav styles
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+
+            const activeNav = document.getElementById('nav-' + pageId);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+
+            // Initialize charts if on population page
+            if (pageId === 'population') {
+                renderCharts();
+            }
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Attractions Filtering Logic
+        function filterAttractions(category) {
+            // Filter Buttons Style
+            const buttons = document.querySelectorAll('.att-filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-brand-primary', 'text-white');
+                btn.classList.add('bg-white', 'text-brand-dark');
+            });
+            event.currentTarget.classList.remove('bg-white', 'text-brand-dark');
+            event.currentTarget.classList.add('bg-brand-primary', 'text-white');
+
+            // Filter Cards
+            const cards = document.querySelectorAll('.attraction-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category.includes(category)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Food Filtering Logic
+        function filterFood(category) {
+            // Filter Buttons Style
+            const buttons = document.querySelectorAll('.food-filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-brand-accent', 'text-white');
+                btn.classList.add('bg-white', 'text-brand-dark');
+            });
+            event.currentTarget.classList.remove('bg-white', 'text-brand-dark');
+            event.currentTarget.classList.add('bg-brand-accent', 'text-white');
+
+            // Filter Cards
+            const cards = document.querySelectorAll('.food-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category.includes(category)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Chart.js Population Charts Rendering
+        let chartsInitialized = false;
+        function renderCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
+
+            // 1. Gender Chart (Doughnut)
+            const ctxGender = document.getElementById('genderChart').getContext('2d');
+            new Chart(ctxGender, {
+                type: 'doughnut',
+                data: {
+                    labels: ['女性人口 (52.3%)', '男性人口 (47.7%)'],
+                    datasets: [{
+                        data: [248016, 226202],
+                        backgroundColor: ['#C85A32', '#2E5A44'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 2. Age Structure Chart (Bar)
+            const ctxAge = document.getElementById('ageChart').getContext('2d');
+            new Chart(ctxAge, {
+                type: 'bar',
+                data: {
+                    labels: ['幼年人口 (0-14歲)', '青壯年人口 (15-64歲)', '高齡人口 (65歲以上)'],
+                    datasets: [{
+                        label: '人口佔比 (%)',
+                        data: [13.8, 71.2, 15.0],
+                        backgroundColor: ['#A67C52', '#C85A32', '#2E5A44'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 3. Growth Trend Chart (Line)
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+            new Chart(ctxGrowth, {
+                type: 'line',
+                data: {
+                    labels: ['2018年', '2019年', '2020年', '2021年', '2022年', '2023年', '2024年'],
+                    datasets: [{
+                        label: '桃園區設籍人口總數',
+                        data: [447000, 453000, 457000, 460000, 462500, 470000, 474218],
+                        borderColor: '#C85A32',
+                        backgroundColor: 'rgba(200, 90, 50, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#C85A32'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 440000,
+                            max: 480000
+                        }
+                    }
+                }
+            });
+        }
+
+        // Set default view on page load
+        window.onload = function() {
+            switchTab('home');
+        };
+    </script>
+</body>
+</html>
